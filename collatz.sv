@@ -6,9 +6,10 @@ module collatz( input logic         clk,   // Clock
 
    /* Replace this comment and the code below with your solution */
    always_ff @(posedge clk) begin
-      done <= go;
-      dout <= n;
+      if (go) dout <= n;
+      else if (done == 1) dout <= 32'd1;
+      else if (dout[0] == 0) dout <= dout >> 1;
+      else dout <= (dout << 1) + dout + 1;
    end
-   /* Replace this comment and the code above with your solution */
-
+   assign done = (dout == 32'd1) ? 1 : 0;
 endmodule
