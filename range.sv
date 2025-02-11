@@ -21,17 +21,53 @@ module range
 	      .done(cdone),
 	      .dout());
 
-   logic [RAM_ADDR_BITS - 1:0] 	 num;         // The RAM address to write
+   logic [RAM_ADDR_BITS - 1:0] 	 num;         // The iteration we are currently on
+   logic [RAM_ADDR_BITS - 1:0] 	 addrSet;         // The RAM address to write too
    logic 			 running = 0; // True during the iterations
 
    /* Replace this comment and the code below with your solution,
       which should generate running, done, cgo, n, num, we, and din */
-   assign done = cdone;
-   assign cgo = go;
-   assign n = start;
-   assign din = 16'h0;
-   assign num = 0;
-   assign we = running;   
+   
+   always_ff @(posedge clk) begin
+      if (go) begin
+         running <= 1;
+         done <= 0;
+         count <= 0;
+         we <= 0;
+         num <= 4'h0;
+         cgo <= 1;
+         n <= start;
+      end
+      else if (running == 1) begin
+         running <= 1;
+         cgo <= 0;
+         we <= 0;
+         if (cdone == 1 && cgo != 1) begin
+            if (num == 4'hf) begin
+               done <= 1;
+               running <= 0;
+            end
+            else begin
+               n <= 1 + start + {28'b0, num};
+               cgo <= 1;
+               addrSet <= num;
+               num <= num + 1;
+               din <= count;
+               count <= 0;
+               we <= 1;
+            end
+         end
+         else begin
+            count <= count + 1;
+         end
+      end
+      else begin
+         done <= 0;
+      end
+      
+   end
+
+
    /* Replace this comment and the code above with your solution */
 
    logic 			 we;                    // Write din to addr
@@ -39,7 +75,7 @@ module range
    logic [15:0] 		 mem[RAM_WORDS - 1:0];  // The RAM itself
    logic [RAM_ADDR_BITS - 1:0] 	 addr;                  // Address to read/write
 
-   assign addr = we ? num : start[RAM_ADDR_BITS-1:0];
+   assign addr = we ? addrSet : start[RAM_ADDR_BITS-1:0];
    
    always_ff @(posedge clk) begin
       if (we) mem[addr] <= din;

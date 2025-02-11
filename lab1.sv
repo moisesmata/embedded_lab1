@@ -1,8 +1,8 @@
 // CSEE 4840 Lab 1: Run and Display Collatz Conjecture Iteration Counts
 //
-// Spring 2023
+// Spring 2025
 //
-// By: <your name here>
+// By:  Isaac Trost, Robbie Pendergrast, Moises Mata
 // Uni: <your uni here>
 
 module lab1( input logic        CLOCK_50,  // 50 MHz Clock input
