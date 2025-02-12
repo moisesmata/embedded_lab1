@@ -27,21 +27,55 @@ module lab1( input logic        CLOCK_50,  // 50 MHz Clock input
  
    range #(256, 8) // RAM_WORDS = 256, RAM_ADDR_BITS = 8)
          r ( .* ); // Connect everything with matching names
+   
+   hex7seg seg5 (n[11:8],HEX5);
+   hex7seg seg4 (n[7:4],HEX4);
+   hex7seg seg3 (n[3:0],HEX3);
 
-   // Replace this comment and the code below it with your own code;
-   // The code below is merely to suppress Verilator lint warnings
-   assign HEX0 = {KEY[2:0], KEY[3:0]};
-   assign HEX1 = SW[6:0];
-   assign HEX2 = {(n == 12'b0), (count == 16'b0) ^ KEY[1],
-		  go, done ^ KEY[0], SW[9:7]};
-   assign HEX3 = HEX0;
-   assign HEX4 = HEX1;
-   assign HEX5 = HEX2;
-   assign LEDR = SW;
-   assign go = KEY[0];
-   assign start = {SW[1:0], SW, SW, SW};
-   assign n = {SW[1:0], SW};
-   
-   
+   hex7seg seg2 (count[11:8],HEX2);
+   hex7seg seg1 (count[7:4],HEX1);
+   hex7seg seg0 (count[3:0],HEX0);
+
+   logic [21:0] but_counter;
+   logic reading;
+   always_ff @(posedge clk) begin
+	   LEDR <= SW;
+	   if (KEY[3] == 0) begin
+		   start <= {22'b0, SW};
+		   go <= 1;
+		   n <= 0;
+		   but_counter <= 0;
+		   reading <= 0;
+	   end
+	   else begin
+		   go <= 0;
+		   if (reading == 0) begin
+		   	if (done == 1) begin
+			   reading <= 1;
+		   	end
+	   	   end
+		   else begin
+			   start <= {20'b0, n};
+			   if (KEY[0] == 0) begin
+				   if (but_counter == 0) begin
+				   	n <= n + 12'b1;
+			   	   end
+				   but_counter <= but_counter + 12'b1;
+			   end
+			   else if (KEY[1] == 0) begin
+				   if (but_counter == 0) begin
+				   	n <= n - 12'b1;
+			   	   end
+				   but_counter <= but_counter + 12'b1;
+			   end
+			   else begin
+				   but_counter <= 0;
+			   end
+			   if (KEY[2] == 0) begin
+				   n <= {2'b0, SW};
+			   end
+		   end
+	   end
+   end
   
 endmodule

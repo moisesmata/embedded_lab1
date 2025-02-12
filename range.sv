@@ -24,7 +24,7 @@ module range
    logic [RAM_ADDR_BITS - 1:0] 	 num;         // The iteration we are currently on
    logic [RAM_ADDR_BITS - 1:0] 	 addrSet;         // The RAM address to write too
    logic 			 running = 0; // True during the iterations
-
+   logic [15:0] running_count;
    /* Replace this comment and the code below with your solution,
       which should generate running, done, cgo, n, num, we, and din */
    
@@ -32,31 +32,31 @@ module range
       if (go) begin
          running <= 1;
          done <= 0;
-         count <= 0;
+         running_count <= 0;
          we <= 0;
-         num <= 4'h0;
+         num <= 0;
          cgo <= 1;
          n <= start;
       end
       else if (running == 1) begin
          cgo <= 0;
          we <= 0;
-         if (num == 4'h0 && we == 1) begin
+         if (num == 0 && we == 1) begin
                done <= 1;
                running <= 0;
             end
          if (cdone == 1 && cgo != 1) begin
             
-               n <= 1 + start + {28'b0, num};
+               n <= 32'b1 + start + {{32-RAM_ADDR_BITS{1'b0}}, num};
                cgo <= 1;
                addrSet <= num;
-               num <= num + 1;
-               din <= count;
-               count <= 0;
+               num <= num + {{RAM_ADDR_BITS-1{1'b0}}, 1'b1};
+               din <= running_count;
+               running_count <= 0;
                we <= 1;
          end
          else begin
-            count <= count + 1;
+            running_count <= running_count + 16'b1;
          end
       end
       else begin
