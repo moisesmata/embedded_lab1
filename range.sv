@@ -39,15 +39,14 @@ module range
          n <= start;
       end
       else if (running == 1) begin
-         running <= 1;
          cgo <= 0;
          we <= 0;
-         if (cdone == 1 && cgo != 1) begin
-            if (num == 4'hf) begin
+         if (num == 4'h0 && we == 1) begin
                done <= 1;
                running <= 0;
             end
-            else begin
+         if (cdone == 1 && cgo != 1) begin
+            
                n <= 1 + start + {28'b0, num};
                cgo <= 1;
                addrSet <= num;
@@ -55,7 +54,6 @@ module range
                din <= count;
                count <= 0;
                we <= 1;
-            end
          end
          else begin
             count <= count + 1;
